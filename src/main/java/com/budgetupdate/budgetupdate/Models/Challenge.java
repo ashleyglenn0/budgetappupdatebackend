@@ -36,9 +36,11 @@ public class Challenge {
     @Column(name = "progress", nullable = false)
     private double progress;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    private User user;
+    @Column(name = "is_global")
+    private boolean isGlobal; // Distinguishes global challenges
+
+    @ManyToMany(mappedBy = "challenges")
+    private List<User> users;
 
     @OneToMany(mappedBy = "challenge", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallengeProgress> userProgress = new ArrayList<>();
@@ -117,11 +119,19 @@ public class Challenge {
         this.progress = progress;
     }
 
-    public User getUser() {
-        return user;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
+    }
+
+    public void setGlobal(boolean global) {
+        isGlobal = global;
     }
 }

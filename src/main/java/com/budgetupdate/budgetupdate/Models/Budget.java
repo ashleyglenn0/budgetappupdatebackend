@@ -2,6 +2,7 @@ package com.budgetupdate.budgetupdate.Models;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,5 +84,23 @@ public class Budget {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public List<String> getUpcomingPayments() {
+        List<String> payments = new ArrayList<>();
+        for (BudgetItem item : budgetItems) {
+            if (item.getBudgetItemType() == BudgetItemType.EXPENSE && item.getDueDate().isAfter(LocalDateTime.now())) {
+                payments.add(item.getName() + " due on " + item.getDueDate());
+            }
+        }
+        return payments.isEmpty() ? List.of("None") : payments;
+    }
+
+    public BigDecimal getUpcomingIncome() {
+        return budgetItems.stream()
+                .filter(item -> item.getBudgetItemType() == BudgetItemType.INCOME && item.getDueDate().isAfter(LocalDateTime.now()))
+                .map(BudgetItem::getAmount) // Assuming BudgetItem::getAmount returns BigDecimal
+                .filter(amount -> amount != null) // Ensure no null values are processed
+                .reduce(BigDecimal.ZERO, BigDecimal::add); // Use BigDecimal::add to sum the values
     }
 }

@@ -3,6 +3,7 @@ package com.budgetupdate.budgetupdate.Models;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="budget_items")
@@ -17,6 +18,9 @@ public class BudgetItem {
 
     @Column(name="amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
+
+    @Column(name = "due_date", nullable = false)
+    private LocalDateTime dueDate; // New field for due date
 
     @Enumerated(EnumType.STRING)
     @Column(name="budget_item_type", nullable = false)
@@ -83,5 +87,13 @@ public class BudgetItem {
 
     public void setBudget(Budget budget) {
         this.budget = budget;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 }

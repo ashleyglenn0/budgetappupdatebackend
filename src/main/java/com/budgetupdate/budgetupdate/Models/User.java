@@ -41,14 +41,16 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CreditRepairLetter> creditRepairLetters = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Challenge> challenges = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "user_challenges",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "challenge_id")
+    )
+    private List<Challenge> challenges;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChallengeProgress> userProgress = new ArrayList<>();
-
-    @ManyToMany(mappedBy = "users")
-    private List<GlobalChallenge> globalChallenges = new ArrayList<>();
 
     public User(){
         this.firstName = "";
@@ -61,7 +63,6 @@ public class User {
         this.budgets = new ArrayList<>();
         this.creditRepairLetters  = new ArrayList<>();
         this.challenges = new ArrayList<>();
-        this.globalChallenges = new ArrayList<>();
     }
 
     public Long getId() {
@@ -152,11 +153,4 @@ public class User {
         this.challenges = challenges;
     }
 
-    public List<GlobalChallenge> getGlobalChallenges() {
-        return globalChallenges;
-    }
-
-    public void setGlobalChallenges(List<GlobalChallenge> globalChallenges) {
-        this.globalChallenges = globalChallenges;
-    }
 }
