@@ -2,6 +2,7 @@ package com.budgetupdate.budgetupdate.Services;
 
 import com.budgetupdate.budgetupdate.Models.User;
 import com.budgetupdate.budgetupdate.Repositories.UserRepository;
+import com.budgetupdate.budgetupdate.Security.CustomUserDetails;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,14 +31,9 @@ public class UserService implements UserDetailsService {
     // Load user by email instead of username
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Find the user by email
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        // Log user loading for debugging
-        System.out.println("Loaded user: " + user.getFirstName());
-
-        // Assign authorities based on whether the user is an admin
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         if (user.isAdmin()) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
@@ -45,16 +41,33 @@ public class UserService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
-        // Log authorities for debugging
-        System.out.println("Authorities: " + authorities);
-
-        // Return a Spring Security User object
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
+        return new CustomUserDetails(
+                user.getId(), // ID as username
+                String.valueOf(user.getId()), // Align username with userId
                 user.getPassword(),
                 authorities
         );
     }
+
+    public UserDetails loadUserById(Long userId) throws UsernameNotFoundException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
+
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        if (user.isAdmin()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        } else {
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+
+        return new CustomUserDetails(
+                user.getId(),
+                String.valueOf(user.getId()), // Use userId as username
+                user.getPassword(),
+                authorities
+        );
+    }
+
 
     @Transactional
     public User saveUser(User user) {
@@ -75,5 +88,11 @@ public class UserService implements UserDetailsService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
+
+    public boolean isUserAuthorized(String email, Long userId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return user.getId().equals(userId);
     }
 }
